@@ -1,11 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class LMGController : MonoBehaviour
 {
     [SerializeField] GunData gunData;
-    InputController Input;
+    InputController InputController;
     float timeBetweenLastShot;
     private float hitForce = 50f;
     RaycastHit hit;
@@ -36,6 +36,10 @@ public class LMGController : MonoBehaviour
     public TrailRenderer tracerEffect;
     public Transform TrailCastOrigin;
 
+    [Header("Set MIN and MAX Damage range")]
+    public float minDamage = 28;
+    public float maxDamage = 32f;
+
     private Animator animator;
 
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
@@ -44,8 +48,8 @@ public class LMGController : MonoBehaviour
     private void Start()
     {
         animator = GetComponentInChildren<Animator>();
-        Input = GetComponentInParent<InputController>();
-        Input.isReloading = false;
+        InputController = GetComponentInParent<InputController>();
+        InputController.isReloading = false;
     }
 
     private void OnEnable()
@@ -61,6 +65,8 @@ public class LMGController : MonoBehaviour
 
     private void Update()
     {
+        gunData.damage = Random.Range(minDamage, maxDamage);
+        InputController.currentAmmo = gunData.currentAmmo;
         timeBetweenLastShot += Time.deltaTime;
         //Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
@@ -93,7 +99,7 @@ public class LMGController : MonoBehaviour
 
     private void ReloadGun()
     {
-        if (!Input.isReloading)
+        if (!InputController.isReloading)
         {
             StartCoroutine(Reload());
         }
@@ -101,14 +107,14 @@ public class LMGController : MonoBehaviour
 
     IEnumerator Reload()
     {
-        Input.isReloading = true;
+        InputController.isReloading = true;
         fireSource.PlayOneShot(reloadClip);
 
         yield return new WaitForSeconds(gunData.reloadTimeAR);
 
         gunData.currentAmmo = gunData.magSize;
 
-        Input.isReloading = false;
+        InputController.isReloading = false;
 
     }
 

@@ -1,10 +1,10 @@
+using System.Collections;
 using UnityEngine;
 
-//Example controller for weapons
-public class WeaponController : MonoBehaviour
+public class MinigunController : MonoBehaviour
 {
     [SerializeField] GunData gunData;
-    InputController Input;
+    InputController InputController;
     float timeBetweenLastShot;
     private float hitForce = 50f;
     RaycastHit hit;
@@ -22,49 +22,99 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private ParticleSystem bulletShells;
     [Tooltip("Source of the fire sound effect (weapon)")]
     [SerializeField] private AudioSource fireSource;
+    [Tooltip("Reload sound")]
+    [SerializeField] private AudioClip reloadClip;
     [Tooltip("Shooting sound")]
     [SerializeField] private AudioClip fireClip;
-    [Header("Muzzle")]
-    [Tooltip("Muzzle transform here")]
-    [SerializeField] private Transform Muzzle;
 
+    [Header("Muzzle transform - Main Camera")]
+    [Tooltip("Muzzle transform here(Main Camera)")]
+    [SerializeField] private Transform Muzzle;
+    [Header("Muzzle transform(Muzzle object in weapons)")]
+    [Tooltip("Muzzle transform here(Muzzle object)")]
     public TrailRenderer tracerEffect;
     public Transform TrailCastOrigin;
 
-    private bool CanShoot() => !Input.isReloading && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
+    [Header("Set MIN and MAX Damage range")]
+    public float minDamage = 28;
+    public float maxDamage = 32f;
+
+    private Animator animator;
+
+    private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
+    private bool CanReload() => gunData.currentAmmo < gunData.magSize;
 
     private void Start()
     {
+        animator = GetComponentInChildren<Animator>();
+        InputController = GetComponentInParent<InputController>();
+        InputController.isReloading = false;
+    }
+
+    private void OnEnable()
+    {
         InputController.shootInput += Shoot;
+        InputController.reloadInput += ReloadGun;
+    }
+    private void OnDisable()
+    {
+        InputController.shootInput -= Shoot;
+        InputController.reloadInput -= ReloadGun;
     }
 
     private void Update()
     {
+        gunData.damage = Random.Range(minDamage, maxDamage);
+        InputController.currentAmmo = gunData.currentAmmo;
         timeBetweenLastShot += Time.deltaTime;
-        Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
+        //Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
 
     public void Shoot()
     {
-        if (gunData.currentAmmo > 0)
+        if (CanShoot())
         {
-            if (CanShoot())
+            muzzleFlash.Play();
+            bulletShells.Play();
+            fireSource.PlayOneShot(fireClip);
+
+            if (Physics.Raycast(Muzzle.position, Muzzle.forward, out hit, gunData.range))
             {
-                muzzleFlash.Play();
-                bulletShells.Play();
-                fireSource.PlayOneShot(fireClip);
-
-                if (Physics.Raycast(Muzzle.position, Muzzle.forward, out hit, gunData.range))
-                {
-                    OnGunShoot();
-                    //Debug.Log("Hitted item: " +hit.transform.name);
-                }
-
-                gunData.currentAmmo--;
-                timeBetweenLastShot = 0;
-
+                OnGunShoot();
+                //Debug.Log("Hitted item: " +hit.transform.name);
             }
+
+            gunData.currentAmmo--;
+            timeBetweenLastShot = 0;
+
         }
+
+
+        if (CanReload())
+        {
+            Reload();
+        }
+    }
+
+    private void ReloadGun()
+    {
+        if (!InputController.isReloading)
+        {
+            StartCoroutine(Reload());
+        }
+    }
+
+    IEnumerator Reload()
+    {
+        InputController.isReloading = true;
+        fireSource.PlayOneShot(reloadClip);
+
+        yield return new WaitForSeconds(gunData.reloadTimeMinigun);
+
+        gunData.currentAmmo = gunData.magSize;
+
+        InputController.isReloading = false;
+
     }
 
     #region Checking tags with Raycast then instantiate bloodspill or other effects

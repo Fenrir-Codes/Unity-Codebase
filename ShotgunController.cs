@@ -1,6 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ShotgunController : MonoBehaviour
 {
@@ -9,10 +9,6 @@ public class ShotgunController : MonoBehaviour
     float timeBetweenLastShot;
     private float hitForce = 80f;
     RaycastHit hit;
-    RaycastHit hit2;
-    RaycastHit hit3;
-    RaycastHit hit4;
-    RaycastHit hit5;
 
     [Header("Objects to attach to weapon")]
     [Tooltip("The blood spill effect spawn (object)")]
@@ -38,8 +34,12 @@ public class ShotgunController : MonoBehaviour
     public TrailRenderer tracerEffect;
     public Transform TrailCastOrigin;
 
+    [Header("Set FIXED damage to shotgun")]
+    public float fixDamage = 22;
+
+
     [Header("InAccuracy of the shotgun")]
-    [SerializeField] private float inAccuracy = 3f;
+    [SerializeField] private float inAccuracy = 4f;
     [Header("Gauge / Shotgun shell")]
     [SerializeField] private int gaugePerShot = 12;
 
@@ -57,8 +57,12 @@ public class ShotgunController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        gunData.damage = fixDamage;
+        InputController.currentAmmo = gunData.currentAmmo;
         timeBetweenLastShot += Time.deltaTime;
-        //Debug.DrawRay(Muzzle.position, Muzzle.forward,Color.red);
+
+        setInaccuracyWhileAiming();
+
     }
 
     private void OnEnable()
@@ -72,6 +76,21 @@ public class ShotgunController : MonoBehaviour
         InputController.reloadInput -= ReloadGun;
     }
 
+    #region setting the inaccuracy while aiming (less spread of the gauges)
+    void setInaccuracyWhileAiming()
+    {
+        if (InputController.isAiming)
+        {
+            inAccuracy = 2.5f;
+        }
+        else
+        {
+            inAccuracy = 4f;
+        }
+    }
+    #endregion
+
+    #region shoot function
     public void Shoot()
     {
         if (CanShoot())
@@ -84,7 +103,7 @@ public class ShotgunController : MonoBehaviour
                 if (Physics.Raycast(Muzzle.position, GetShootingDirection(), out hit, gunData.range))
                 {
                     OnGunShoot();
-                    Debug.Log("Hitted item: " + hit.transform.name);
+                    // Debug.Log("Hitted item: " + hit.transform.name);
                 }
             }
             gunData.currentAmmo--;
@@ -97,8 +116,11 @@ public class ShotgunController : MonoBehaviour
         {
             Reload();
         }
-    }
 
+    }
+    #endregion
+
+    #region calculating the inaccuracy for shotgun (bullet spread)
     Vector3 GetShootingDirection()
     {
         Vector3 targetPosition = Muzzle.position + Muzzle.forward * gunData.range;
@@ -110,7 +132,9 @@ public class ShotgunController : MonoBehaviour
         Vector3 direction = targetPosition - Muzzle.position;
         return direction.normalized;
     }
+    #endregion
 
+    #region reload function
     private void ReloadGun()
     {
         if (!InputController.isReloading)
@@ -118,7 +142,9 @@ public class ShotgunController : MonoBehaviour
             StartCoroutine(Reload());
         }
     }
+    #endregion
 
+    #region reload enumerator
     IEnumerator Reload()
     {
         InputController.isReloading = true;
@@ -131,6 +157,7 @@ public class ShotgunController : MonoBehaviour
         InputController.isReloading = false;
 
     }
+    #endregion
 
     #region Checking tags with Raycast then instantiate bloodspill or other effects
     private void OnGunShoot()

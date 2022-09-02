@@ -1,12 +1,11 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PistolController : MonoBehaviour
 {
     [SerializeField] GunData gunData;
-    InputController Input;
+    InputController InputController;
     float timeBetweenLastShot;
     private float hitForce = 50f;
     RaycastHit hit;
@@ -37,16 +36,17 @@ public class PistolController : MonoBehaviour
     public TrailRenderer tracerEffect;
     public Transform TrailCastOrigin;
 
-    private Animation anim;
+    [Header("Set MIN and MAX Damage range")]
+    public float minDamage = 38;
+    public float maxDamage = 63f;
 
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
     private bool CanReload() => gunData.currentAmmo < gunData.magSize;
 
     private void Start()
     {
-        anim = GetComponent<Animation>();
-        Input = GetComponentInParent<InputController>();
-        Input.isReloading = false;
+        InputController = GetComponentInParent<InputController>();
+        InputController.isReloading = false;
     }
 
     private void OnEnable()
@@ -62,8 +62,10 @@ public class PistolController : MonoBehaviour
 
     private void Update()
     {
+        gunData.damage = Random.Range(minDamage, maxDamage);
+        InputController.currentAmmo = gunData.currentAmmo;
         timeBetweenLastShot += Time.deltaTime;
-       // Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
+        // Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
 
     public void Shoot()
@@ -73,7 +75,6 @@ public class PistolController : MonoBehaviour
             muzzleFlash.Play();
             bulletShells.Play();
             fireSource.PlayOneShot(fireClip);
-            anim.Play("Shoot");
 
             if (Physics.Raycast(Muzzle.position, Muzzle.forward, out hit, gunData.range))
             {
@@ -90,31 +91,33 @@ public class PistolController : MonoBehaviour
         {
             Reload();
         }
-        
+
     }
 
+    #region calling reload enumerator
     private void ReloadGun()
     {
-        if (!Input.isReloading)
+        if (!InputController.isReloading)
         {
             StartCoroutine(Reload());
         }
     }
+    #endregion
 
+    #region reload
     IEnumerator Reload()
     {
-       Input.isReloading = true;
-        anim.Play("Reload");
+        InputController.isReloading = true;
         fireSource.PlayOneShot(reloadClip);
 
         yield return new WaitForSeconds(gunData.reloadTimePistol);
 
         gunData.currentAmmo = gunData.magSize;
 
-        Input.isReloading = false;
+        InputController.isReloading = false;
 
     }
-
+    #endregion
 
     #region Checking tags with Raycast then instantiate bloodspill or other effects
     private void OnGunShoot()
