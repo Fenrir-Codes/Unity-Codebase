@@ -11,7 +11,7 @@ public class MinigunController : MonoBehaviour
 
     [Header("Objects to attach to weapon")]
     [Tooltip("The blood spill effect spawn (object)")]
-    [SerializeField] private GameObject bloodEffect;
+    [SerializeField] private GameObject[] bloodEffect;
     [Tooltip("The impact effect spawn (object)")]
     [SerializeField] private GameObject woodImpactEffect;
     [SerializeField] private GameObject stoneImpactEffect;
@@ -51,6 +51,7 @@ public class MinigunController : MonoBehaviour
         InputController.isReloading = false;
     }
 
+    #region OnEnable / OnDisable functions
     private void OnEnable()
     {
         InputController.shootInput += Shoot;
@@ -61,7 +62,9 @@ public class MinigunController : MonoBehaviour
         InputController.shootInput -= Shoot;
         InputController.reloadInput -= ReloadGun;
     }
+    #endregion
 
+    #region Update
     private void Update()
     {
         gunData.damage = Random.Range(minDamage, maxDamage);
@@ -69,7 +72,9 @@ public class MinigunController : MonoBehaviour
         timeBetweenLastShot += Time.deltaTime;
         //Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
+    #endregion
 
+    #region shoot script
     public void Shoot()
     {
         if (CanShoot())
@@ -95,7 +100,9 @@ public class MinigunController : MonoBehaviour
             Reload();
         }
     }
+    #endregion
 
+    #region reload script
     private void ReloadGun()
     {
         if (!InputController.isReloading)
@@ -103,7 +110,9 @@ public class MinigunController : MonoBehaviour
             StartCoroutine(Reload());
         }
     }
+    #endregion
 
+    #region reload enumerator
     IEnumerator Reload()
     {
         InputController.isReloading = true;
@@ -116,6 +125,7 @@ public class MinigunController : MonoBehaviour
         InputController.isReloading = false;
 
     }
+    #endregion
 
     #region Checking tags with Raycast then instantiate bloodspill or other effects
     private void OnGunShoot()
@@ -125,16 +135,29 @@ public class MinigunController : MonoBehaviour
         {
             hit.rigidbody.AddForce(-hit.normal * hitForce);
         }
-
         //If the objet we are hitting tagged as Enemy spawn blood splash instead of bullet impact
-        if (hit.transform.CompareTag("Enemy"))
+        else if (hit.transform.CompareTag("Head") || hit.transform.CompareTag("Torso") || hit.transform.CompareTag("Arm") || hit.transform.CompareTag("Leg"))
         {
             spawnEnemyBloodSpill(hit);
-            EnemyAIController Enemy = hit.transform.GetComponent<EnemyAIController>();
+            EnemyAIController Enemy = hit.transform.GetComponentInParent<EnemyAIController>();
 
-            if (Enemy != null)
+            if (hit.transform.CompareTag("Head"))
             {
-                Enemy.takeDamage(gunData.damage);
+                Enemy.takeDamage(Random.Range(95f, 100f));
+            }
+            else if (hit.transform.CompareTag("Torso"))
+            {
+                Enemy.takeDamage(Random.Range(45f, 48f));
+            }
+            else if (hit.transform.CompareTag("Arm"))
+            {
+                Enemy.takeDamage(Random.Range(26f, 33f));
+
+            }
+            else if (hit.transform.CompareTag("Leg"))
+            {
+                Enemy.takeDamage(Random.Range(22f, 28f));
+
             }
         }
         else if (hit.transform.CompareTag("Wood"))
@@ -190,10 +213,15 @@ public class MinigunController : MonoBehaviour
     #region spawnBloodSpill code
     void spawnEnemyBloodSpill(RaycastHit hit)
     {
-        //blood effect
-        GameObject bloodObject = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        int randomBlood = Random.Range(0, bloodEffect.Length);
+        ////blood effect
+        GameObject bloodObject = Instantiate(bloodEffect[randomBlood], hit.point, Quaternion.LookRotation(hit.normal));
         bloodObject.transform.position += bloodObject.transform.forward / 1000;
         Destroy(bloodObject, 0.5f);
+
+        //GameObject bloodObject = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        //bloodObject.transform.position += bloodObject.transform.forward / 1000;
+        //Destroy(bloodObject, 0.5f);
     }
     #endregion
 
