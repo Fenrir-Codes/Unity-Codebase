@@ -11,29 +11,35 @@ public class LMGController : MonoBehaviour
     RaycastHit hit;
 
     [Header("Objects to attach to weapon")]
+    [Header("Hitmarker")]
+    [SerializeField] private GameObject hitMarker;
+    [SerializeField] private AudioClip hitMarkerClip;
+    [Space]
     [Tooltip("The blood spill effect spawn (object)")]
     [SerializeField] private GameObject[] bloodEffect;
     [Tooltip("The impact effect spawn (object)")]
     [SerializeField] private GameObject woodImpactEffect;
     [SerializeField] private GameObject stoneImpactEffect;
     [SerializeField] private GameObject metalImpactEffect;
+    [Space]
     [Tooltip("Muzzle particle system (object)")]
     [SerializeField] private ParticleSystem muzzleFlash;
     [Tooltip("MBulletShells particle system (object)")]
     [SerializeField] private ParticleSystem bulletShells;
+    [Space]
     [Tooltip("Source of the fire sound effect (weapon)")]
     [SerializeField] private AudioSource fireSource;
     [Tooltip("Reload sound")]
     [SerializeField] private AudioClip reloadClip;
     [Tooltip("Shooting sound")]
     [SerializeField] private AudioClip fireClip;
-
+    [Space]
     [Header("Muzzle transform - Main Camera")]
     [Tooltip("Muzzle transform here(Main Camera)")]
     [SerializeField] private Transform Muzzle;
     [Header("Muzzle transform(Muzzle object in weapons)")]
-    [Tooltip("Muzzle transform here(Muzzle object)")]
     public TrailRenderer tracerEffect;
+    [Tooltip("Muzzle transform here(Muzzle object)")]
     public Transform TrailCastOrigin;
 
     [Header("Set MIN and MAX Damage range")]
@@ -47,6 +53,7 @@ public class LMGController : MonoBehaviour
 
     private void Start()
     {
+        hitMarker.SetActive(false);
         animator = GetComponentInChildren<Animator>();
         InputController = GetComponentInParent<InputController>();
         InputController.isReloading = false;
@@ -140,6 +147,9 @@ public class LMGController : MonoBehaviour
         {
             spawnEnemyBloodSpill(hit);
             EnemyAIController Enemy = hit.transform.GetComponentInParent<EnemyAIController>();
+
+            MarkerActive();
+            Invoke("disableMarker", 0.1f);
 
             if (hit.transform.CompareTag("Head"))
             {
@@ -256,4 +266,16 @@ public class LMGController : MonoBehaviour
 
     #endregion
 
+    #region Hit Marker
+    void MarkerActive()
+    {
+        hitMarker.SetActive(true);
+        fireSource.PlayOneShot(hitMarkerClip);
+    }
+
+    void disableMarker()
+    {
+        hitMarker.SetActive(false);
+    }
+    #endregion
 }

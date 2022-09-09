@@ -9,7 +9,7 @@ public class InputController : MonoBehaviour
 
     [Header("Currently active weapon (array 0,1,2,3,4)")]
     public int activeWeapon = 0;
-
+    [Space]
     [Header(" ----- Booleans -----")]
     public bool canShoot;
     private bool isSemiAuto;
@@ -17,17 +17,17 @@ public class InputController : MonoBehaviour
     public bool isReloading;
     private bool canAim;
     public bool isAiming;
-
+    [Space]
     [Header("Current amount of ammo in the magazine")]
     public int currentAmmo;
-
+    [Space]
     [Header("Default and Aim position transforms")]
     public Transform defaultPosition;
     public Transform aimPosition;
-
+    [Space]
     [Header(" ----- Weapons -----")]
     public Transform[] weapons;
-
+    [Space]
     private float aimSpeed = 15f;
     private float waitSemiShootInterval = 0.450f;
     Vector3 defaultPos = new Vector3(0f, 0f, 0f);
@@ -74,7 +74,8 @@ public class InputController : MonoBehaviour
                 }
 
                 // check wich weapon can aim down the sight
-                if (weapons[i].CompareTag("Pistol") || weapons[i].CompareTag("Shotgun") || weapons[i].CompareTag("Assault Rifle"))
+                if (weapons[i].CompareTag("Pistol") || weapons[i].CompareTag("Shotgun")
+                || weapons[i].CompareTag("Assault Rifle") || weapons[i].CompareTag("LMG"))
                 {
                     canAim = true;
                 }

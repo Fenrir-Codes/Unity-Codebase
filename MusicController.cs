@@ -1,16 +1,23 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MusicController : MonoBehaviour
 {
+    InputController inputController;
     PauseMenu pauseMenu;
-    AudioSource musicPlayer;
+    public AudioSource musicPlayer;
+    [Header("Music audio clips")]
     [SerializeField] private AudioClip[] audioClips;
+    [Header("Big Fucking Guns")]
+    public AudioClip BFGforLMG;
+    public AudioClip BFGforMinigun;
 
     // Start is called before the first frame update
     void Start()
     {
         musicPlayer = GetComponent<AudioSource>();
         pauseMenu = GameObject.Find("PauseGameCanvas").GetComponent<PauseMenu>();
+        inputController = GameObject.FindGameObjectWithTag("WeaponHolder").GetComponent<InputController>();
     }
 
     // Update is called once per frame
@@ -29,6 +36,7 @@ public class MusicController : MonoBehaviour
                 musicPlayer.clip = audioClips[i];
                 musicPlayer.Play();
             }
+
             if (pauseMenu.isPaused)
             {
                 musicPlayer.Pause();
@@ -37,6 +45,13 @@ public class MusicController : MonoBehaviour
             {
                 musicPlayer.UnPause();
             }
+
+            //if (inputController.activeWeapon == 4)
+            //{
+            //    musicPlayer.Stop();
+            //    musicPlayer.clip = BFGforMinigun;
+            //    musicPlayer.Play();
+            //}
 
         }
 

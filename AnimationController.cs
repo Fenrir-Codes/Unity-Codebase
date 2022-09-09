@@ -16,7 +16,9 @@ public class AnimationController : MonoBehaviour
     private string currentAnimaton;
     const string Begin = "Start";
     const string Idle = "Idle";
+    const string LongTimeIdle = "LongIdle";
     const string Walk = "Walk";
+    const string Run = "Run";
     const string Fire = "Shoot";
     const string Reload = "Reload";
     //weapon tag's
@@ -26,12 +28,18 @@ public class AnimationController : MonoBehaviour
     const string Shotgun = "Shotgun";
     const string Minigun = "Minigun";
 
+    private float longTimeIdleInterval;
     [Header("The activated weapon in the input controller array")]
     public int activeGun = 0;
-
-    //[Header("_____ ANIMATOR WALK SETTINGS _____")]
-    //[Header("The walk animation speed")]
-    //[SerializeField, Range(0, 2)] float walkAnimationSpeed = 1.0f;
+    [Space]
+    [SerializeField] private float IdleLongTimePeriod = 10f;
+    [Space]
+    [Header("_____ ANIMATOR WALK SETTINGS _____")]
+    [Header("The walk animation speed")]
+    [SerializeField, Range(0, 2)] float walkAnimationSpeed = 1.0f;
+    [Header("The Run animation speed")]
+    [SerializeField, Range(0, 2)] float runAnimationSpeed = 1.0f;
+    [Space]
     [Header("_____ ANIMATOR SHOOTING SPEED SETTINGS _____")]
     [Header("The default shooting animation speed")]
     [SerializeField, Range(0, 2)] float DefaultAnimationSpeed = 1.0f;
@@ -56,7 +64,6 @@ public class AnimationController : MonoBehaviour
     [SerializeField, Range(0, 2)] float MinigunReloadAnimationSpeed = 1.0f;
     [Header("Shotgun reload animation")]
     [SerializeField, Range(0, 2)] float ShotgunReloadAnimationSpeed = 1.0f;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -70,18 +77,39 @@ public class AnimationController : MonoBehaviour
     {
         activeGun = InputController.activeWeapon;
 
+        if (!player.isWalking && !player.isRunning && !InputController.isAiming && !InputController.isShooting)
+        {
+            longTimeIdleInterval += Time.deltaTime;
+            //Debug.Log("interval of idlelong: " + longTimeIdleInterval);
+        }
+        else
+        {
+            longTimeIdleInterval = 0.0f;
+        }
+
         if (activeGun > -1)
         {
             animator = GetComponentInChildren<Animator>();
+
             if (animator != null)
             {
-                //if (player.isWalking && !InputController.isShooting && !InputController.isAiming && !InputController.isReloading)
-                //{
+                if (player.isWalking && !InputController.isShooting /*&& !InputController.isAiming */&& !InputController.isReloading)
+                {
 
-                //    ChangeAnimationState(Walk);
-                //    animator.speed = walkAnimationSpeed;
-                //}
-                if (player.isGrounded && InputController.isShooting)
+                    ChangeAnimationState(Walk);
+                    animator.speed = walkAnimationSpeed;
+                }
+                else if (player.isRunning && !player.isWalking && !InputController.isShooting && !InputController.isAiming && !InputController.isReloading)
+                {
+                    ChangeAnimationState(Run);
+                    animator.speed = runAnimationSpeed;
+                }
+                else if (player.isRunning && InputController.isAiming && !InputController.isShooting)
+                {
+                    ChangeAnimationState(Walk);
+                    animator.speed = walkAnimationSpeed;
+                }
+                else if (player.isGrounded && InputController.isShooting)
                 {
                     if (InputController.weapons[activeGun].CompareTag(Pistol))
                     {
@@ -135,16 +163,18 @@ public class AnimationController : MonoBehaviour
                 {
                     StartCoroutine(startAnimation());
                 }
+                else if (longTimeIdleInterval >= IdleLongTimePeriod)
+                {
+                    ChangeAnimationState(LongTimeIdle);
+                    
+                }
                 else
                 {
                     ChangeAnimationState(Idle);
-                    animator.speed = DefaultAnimationSpeed;
+                    animator.speed = DefaultAnimationSpeed;                 
+
                 }
             }
-            //else
-            //{
-            //    Debug.Log("Animator component not found! Check if animator components exists on the prefabs.");
-            //}
 
         }
 
@@ -185,6 +215,7 @@ public class AnimationController : MonoBehaviour
         yield return new WaitForSeconds(.5f);
     }
     #endregion
+
 
 
 }

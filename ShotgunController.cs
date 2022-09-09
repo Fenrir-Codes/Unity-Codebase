@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Timeline;
 using Random = UnityEngine.Random;
 
 public class ShotgunController : MonoBehaviour
@@ -11,27 +12,33 @@ public class ShotgunController : MonoBehaviour
     RaycastHit hit;
 
     [Header("Objects to attach to weapon")]
+    [Header("Hitmarker")]
+    [SerializeField] private GameObject hitMarker;
+    [SerializeField] private AudioClip hitMarkerClip;
+    [Space]
     [Tooltip("The blood spill effect spawn (object)")]
-    [SerializeField] private GameObject bloodEffect;
+    [SerializeField] private GameObject[] bloodEffect;
     [Tooltip("The impact effect spawn (object)")]
     [SerializeField] private GameObject woodImpactEffect;
     [SerializeField] private GameObject stoneImpactEffect;
     [SerializeField] private GameObject metalImpactEffect;
+    [Space]
     [Tooltip("Muzzle particle system (object)")]
     [SerializeField] private ParticleSystem muzzleFlash;
+    [Space]
     [Tooltip("Source of the fire sound effect (weapon)")]
     [SerializeField] private AudioSource fireSource;
     [Tooltip("Reload sound")]
     [SerializeField] private AudioClip reloadClip;
     [Tooltip("Shooting sound")]
     [SerializeField] private AudioClip fireClip;
-
+    [Space]
     [Header("Muzzle transform - Main Camera")]
     [Tooltip("Muzzle transform here(Main Camera)")]
     [SerializeField] private Transform Muzzle;
     [Header("Muzzle transform(Muzzle object in weapons)")]
-    [Tooltip("Muzzle transform here(Muzzle object)")]
     public TrailRenderer tracerEffect;
+    [Tooltip("Muzzle transform here(Muzzle object)")]
     public Transform TrailCastOrigin;
 
     [Header("Set FIXED damage to shotgun")]
@@ -50,10 +57,12 @@ public class ShotgunController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        hitMarker.SetActive(false);
         InputController = GetComponentInParent<InputController>();
         InputController.isReloading = false;
     }
 
+    #region Update
     // Update is called once per frame
     void Update()
     {
@@ -64,7 +73,9 @@ public class ShotgunController : MonoBehaviour
         setInaccuracyWhileAiming();
 
     }
+    #endregion
 
+    #region OnEnable / OnDisable functions
     private void OnEnable()
     {
         InputController.shootInput += Shoot;
@@ -75,6 +86,7 @@ public class ShotgunController : MonoBehaviour
         InputController.shootInput -= Shoot;
         InputController.reloadInput -= ReloadGun;
     }
+    #endregion
 
     #region setting the inaccuracy while aiming (less spread of the gauges)
     void setInaccuracyWhileAiming()
@@ -167,16 +179,32 @@ public class ShotgunController : MonoBehaviour
         {
             hit.rigidbody.AddForce(-hit.normal * hitForce);
         }
-
         //If the objet we are hitting tagged as Enemy spawn blood splash instead of bullet impact
-        if (hit.transform.CompareTag("Enemy"))
+        else if (hit.transform.CompareTag("Head") || hit.transform.CompareTag("Torso") || hit.transform.CompareTag("Arm") || hit.transform.CompareTag("Leg"))
         {
             spawnEnemyBloodSpill(hit);
-            EnemyAIController Enemy = hit.transform.GetComponent<EnemyAIController>();
+            EnemyAIController Enemy = hit.transform.GetComponentInParent<EnemyAIController>();
 
-            if (Enemy != null)
+            MarkerActive();
+            Invoke("disableMarker", 0.1f);
+
+            if (hit.transform.CompareTag("Head"))
             {
-                Enemy.takeDamage(gunData.damage);
+                Enemy.takeDamage(Random.Range(fixDamage, 100f));
+            }
+            else if (hit.transform.CompareTag("Torso"))
+            {
+                Enemy.takeDamage(fixDamage);
+            }
+            else if (hit.transform.CompareTag("Arm"))
+            {
+                Enemy.takeDamage(fixDamage);
+
+            }
+            else if (hit.transform.CompareTag("Leg"))
+            {
+                Enemy.takeDamage(fixDamage);
+
             }
         }
         else if (hit.transform.CompareTag("Wood"))
@@ -232,10 +260,15 @@ public class ShotgunController : MonoBehaviour
     #region spawnBloodSpill code
     void spawnEnemyBloodSpill(RaycastHit hit)
     {
-        //blood effect
-        GameObject bloodObject = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        int randomBlood = Random.Range(0, bloodEffect.Length);
+        ////blood effect
+        GameObject bloodObject = Instantiate(bloodEffect[randomBlood], hit.point, Quaternion.LookRotation(hit.normal));
         bloodObject.transform.position += bloodObject.transform.forward / 1000;
         Destroy(bloodObject, 0.5f);
+
+        //GameObject bloodObject = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        //bloodObject.transform.position += bloodObject.transform.forward / 1000;
+        //Destroy(bloodObject, 0.5f);
     }
     #endregion
 
@@ -268,6 +301,19 @@ public class ShotgunController : MonoBehaviour
 
     }
 
+    #endregion
+
+    #region Hit Marker
+    void MarkerActive()
+    {
+        hitMarker.SetActive(true);
+        fireSource.PlayOneShot(hitMarkerClip);
+    }
+
+    void disableMarker()
+    {
+        hitMarker.SetActive(false);
+    }
     #endregion
 
 }

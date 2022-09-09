@@ -31,11 +31,12 @@ public class DoorController : MonoBehaviour
     {
         if (canPressTheButton)
         {
-            MoneyDisplayController money = GameObject.Find("MoneyDisplay").GetComponent<MoneyDisplayController>();
-            GlobalTextController textController = GameObject.Find("GlobalTextController").GetComponent<GlobalTextController>();
 
             if (Input.GetKeyDown(KeyCode.E))
             {
+                MoneyDisplayController money = GameObject.Find("MoneyDisplay").GetComponent<MoneyDisplayController>();
+                GlobalTextController textController = GameObject.Find("GlobalTextController").GetComponent<GlobalTextController>();
+
                 if (money.MyMoney >= openingPrice)
                 {
  
