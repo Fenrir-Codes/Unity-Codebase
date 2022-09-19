@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ public class MusicController : MonoBehaviour
 
     private int LMG = 2;
     private int Minigun = 4;
-    private int i;
+    private int music;
 
     // Start is called before the first frame update
     void Start()
@@ -22,6 +23,7 @@ public class MusicController : MonoBehaviour
         musicPlayer = GetComponent<AudioSource>();
         pauseMenu = GameObject.Find("PauseGameCanvas").GetComponent<PauseMenu>();
         inputController = GameObject.FindGameObjectWithTag("WeaponHolder").GetComponent<InputController>();
+        RandomizeAudioClip();
     }
 
     // Update is called once per frame
@@ -33,6 +35,7 @@ public class MusicController : MonoBehaviour
     #region play the music
     private void PlayMusic()
     {
+        int i = 0;
         if (pauseMenu.isPaused)
         {
             musicPlayer.Pause();
@@ -40,11 +43,11 @@ public class MusicController : MonoBehaviour
         else
         {
             musicPlayer.UnPause();
-            i = 0;
 
-            if (inputController.activeWeapon != LMG | inputController.activeWeapon != Minigun)
+            if (inputController.activeWeapon != LMG && inputController.activeWeapon != Minigun)
             {
-                PlayRandomFromList();
+                i++;
+                PlayRandomFromList(i);
             }
             if (inputController.activeWeapon == LMG)
             {
@@ -59,22 +62,30 @@ public class MusicController : MonoBehaviour
     }
     #endregion
 
-    #region play random from array
-    private void PlayRandomFromList()
+    #region ranomize clip on start
+    private void RandomizeAudioClip()
     {
-        i++;
+        music = Random.Range(0, audioClips.Length);
+        musicPlayer.clip = audioClips[music];
+    }
+    #endregion
+
+    #region play random from array
+    private void PlayRandomFromList(int i)
+    {
+        musicPlayer.volume = 0.3f;
+        musicPlayer.clip = audioClips[music];
         if (!musicPlayer.isPlaying)
         {
-            var music = Random.Range(i, audioClips.Length);
-            musicPlayer.clip = audioClips[music];
-            musicPlayer.volume = 0.3f;
             musicPlayer.Play();
         }
-        if (i >= audioClips.Length)
+
+        if (i >= audioClips.Length && !musicPlayer.isPlaying)
         {
             musicPlayer.clip = audioClips[i];
             musicPlayer.Play();
         }
+
     }
     #endregion
 
