@@ -10,12 +10,12 @@ public class PlayerMovementController : MonoBehaviour
     [Header("Character controller (First person player)")]
     [Tooltip("The caharacter controller")]
     [SerializeField] private CharacterController controller;
-
+    [Space]
     //Variables
     [Header("Gravity setting")]
     [Tooltip("Gravity value")]
     [SerializeField] private float Gravity = -15f;
-
+    [Space]
     [Header("Player settings")]
     [Tooltip("Walking speed value")]
     [SerializeField] private float walkSpeed = 2.5f;
@@ -24,7 +24,7 @@ public class PlayerMovementController : MonoBehaviour
     [Tooltip("Jump force value")]
     [SerializeField] private float jumpForce = 4f;
     [HideInInspector] public float moveSpeed = 0f;
-
+    [Space]
     //Vectors
     public Vector3 moveDirection;
     private Vector3 Velocity;
@@ -93,23 +93,7 @@ public class PlayerMovementController : MonoBehaviour
         {
             Jump();
         }
-        //if (pickupController.isEmptyHands == false)
-        //{
-        //    gun = GetComponentInChildren<GunController>();
-        //    if (gun.isShooting == true)
-        //    {
-        //        isRunning = false;
-        //        isWalking = false;
-        //    }
-        //    if (gun.isReloading)
-        //    {
-        //        isRunning = false;
-        //        isWalking = false;
-        //    }
-        //}
-
         ApplyGravity();
-
 
     }
     #endregion
