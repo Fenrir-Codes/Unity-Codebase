@@ -14,19 +14,21 @@ public class PlayerMovementController : MonoBehaviour
     //Variables
     [Header("Gravity setting")]
     [Tooltip("Gravity value")]
-    [SerializeField] private float Gravity = -15f;
+    [SerializeField] private float Gravity = -20f;
     [Space]
     [Header("Player settings")]
     [Tooltip("Walking speed value")]
     [SerializeField] private float walkSpeed = 2.5f;
+    [Space]
     [Tooltip("Running speed value")]
-    [SerializeField] private float runSpeed = 5f;
+    [SerializeField] private float runSpeed = 3f;
+    [Space]
     [Tooltip("Jump force value")]
-    [SerializeField] private float jumpForce = 4f;
+    [SerializeField] private float jumpForce = 0.5f;
     [HideInInspector] public float moveSpeed = 0f;
     [Space]
     //Vectors
-    public Vector3 moveDirection;
+    [HideInInspector] public Vector3 moveDirection;
     private Vector3 Velocity;
 
     //Booleans
@@ -53,13 +55,14 @@ public class PlayerMovementController : MonoBehaviour
     void Update()
     {
         ResetVelocity();
+        Initializing();
+        processActions();
         ApplyGravity();
-        isGrounded = controller.isGrounded;
+    }
+    #endregion
 
-        moveDirection.Normalize();
-        moveDirection.x = Input.GetAxis("Horizontal");
-        moveDirection.y = Input.GetAxis("Vertical");
-
+    public void processActions()
+    {
         //Move
         if (moveDirection != Vector3.zero)
         {
@@ -93,12 +96,16 @@ public class PlayerMovementController : MonoBehaviour
         {
             Jump();
         }
-        ApplyGravity();
-
     }
-    #endregion
 
-    //Functions
+    private void Initializing()
+    {
+        isGrounded = controller.isGrounded;
+        moveDirection.Normalize();
+        moveDirection.x = Input.GetAxis("Horizontal");
+        moveDirection.y = Input.GetAxis("Vertical");
+    }
+
     #region Move the character
     void Move()
     {
@@ -122,7 +129,7 @@ public class PlayerMovementController : MonoBehaviour
     void Jump()
     {
         isJumping = true;
-        Velocity.y = jumpForce;
+        Velocity.y += Mathf.Sqrt(jumpForce * -3.0f * Gravity);
         isJumping = false;
     }
     #endregion
@@ -171,7 +178,7 @@ public class PlayerMovementController : MonoBehaviour
     #region Apply gravitation
     void ApplyGravity()
     {
-        Velocity.y -= Gravity * Time.deltaTime;
+        Velocity.y += Gravity * Time.deltaTime;
         controller.Move(Velocity * Time.deltaTime);
     }
     #endregion
@@ -179,9 +186,9 @@ public class PlayerMovementController : MonoBehaviour
     #region Resetting velocity
     void ResetVelocity()
     {
-        if (Velocity.y < 0)
+        if (Velocity.y < 0 && isGrounded)
         {
-            Velocity.y = -2f;
+            Velocity.y = 0f;
             //Debug.Log("Velocity : " + Velocity.y);
         }
     }
