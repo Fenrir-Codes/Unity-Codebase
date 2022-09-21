@@ -13,16 +13,20 @@ public class WeaponSway : MonoBehaviour
     private float smooth = 6f;
     [SerializeField]
     private float multiplier = 3;
-
+    //[Space]
+    //[Header("Riotation / tilt")]
+    //public float smoothRotation = 2;
+    //public float tiltAngle = 10f;
 
     // Update is called once per frame
     void Update()
     {
         swingWeapon();
+        //TiltWeapon();
     }
 
     #region Weapon swing effect
-    void swingWeapon()
+    private void swingWeapon()
     {
         // get mouse input
         float mouseX = Input.GetAxisRaw("Mouse X") * multiplier;
@@ -38,4 +42,15 @@ public class WeaponSway : MonoBehaviour
         transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, smooth * Time.deltaTime);
     }
     #endregion
+
+    //#region tilt setting
+    //private void TiltWeapon()
+    //{
+    //    float tiltAroundZ = Input.GetAxis("Mouse X") * tiltAngle;
+    //    float tiltAroundX = Input.GetAxis("Mouse Y") * tiltAngle;
+    //    Quaternion target = Quaternion.Euler(tiltAroundX, 0, tiltAroundZ);
+    //    transform.localRotation = Quaternion.Slerp(transform.localRotation, target, Time.deltaTime * smoothRotation);
+    //}
+    //#endregion
+
 }
