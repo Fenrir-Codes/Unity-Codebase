@@ -12,6 +12,8 @@ public class LMGController : MonoBehaviour
 
     [Header("Objects to attach to weapon")]
     [Header("Hitmarker")]
+    [SerializeField] private GameObject headshotMarker;
+    [SerializeField] private AudioClip headMarkerClip;
     [SerializeField] private GameObject hitMarker;
     [SerializeField] private AudioClip hitMarkerClip;
     [Space]
@@ -48,16 +50,26 @@ public class LMGController : MonoBehaviour
 
     private Animator animator;
 
+    private int setDefaultAmmoReserve = 600;
+
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
-    private bool CanReload() => gunData.currentAmmo < gunData.magSize;
+    private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
 
     private void Start()
     {
+        Initialize();
+    }
+
+    #region initialize
+    private void Initialize()
+    {
+        gunData.ammoReserves = setDefaultAmmoReserve;
         hitMarker.SetActive(false);
         animator = GetComponentInChildren<Animator>();
         InputController = GetComponentInParent<InputController>();
         InputController.isReloading = false;
     }
+    #endregion
 
     #region OnEnable / OnDisable functions
     private void OnEnable()
@@ -77,6 +89,7 @@ public class LMGController : MonoBehaviour
     {
         gunData.damage = Random.Range(minDamage, maxDamage);
         InputController.currentAmmo = gunData.currentAmmo;
+        InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
         //Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
@@ -102,17 +115,13 @@ public class LMGController : MonoBehaviour
 
         }
 
-        if (CanReload())
-        {
-            Reload();
-        }
     }
     #endregion
 
     #region Reload function
     private void ReloadGun()
     {
-        if (!InputController.isReloading)
+        if (!InputController.isReloading && CanReload())
         {
             StartCoroutine(Reload());
         }
@@ -123,12 +132,20 @@ public class LMGController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
-        fireSource.PlayOneShot(reloadClip);
-
         yield return new WaitForSeconds(gunData.reloadTimeAR);
 
-        gunData.currentAmmo = gunData.magSize;
+        int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine
+                                                                   // check if we have enough ammo in reserves to refill
+        reloadAmmount = (gunData.ammoReserves - reloadAmmount) >= 0 ? reloadAmmount : gunData.ammoReserves;
+        gunData.currentAmmo += reloadAmmount;
+        gunData.ammoReserves -= reloadAmmount;
 
+        if (gunData.currentAmmo > gunData.magSize)
+        {
+            gunData.currentAmmo = gunData.magSize;
+        }
+
+        //gunData.currentAmmo = gunData.magSize;
         InputController.isReloading = false;
 
     }
@@ -153,7 +170,9 @@ public class LMGController : MonoBehaviour
 
             if (hit.transform.CompareTag("Head"))
             {
-                Enemy.takeDamage(Random.Range(95f, 100f));
+                markHeadshot();
+                Invoke("disableHeadMarker", 1.057f);
+                Enemy.takeDamage(Random.Range(99f, 100f));
             }
             else if (hit.transform.CompareTag("Torso"))
             {
@@ -269,8 +288,19 @@ public class LMGController : MonoBehaviour
     #region Hit Marker
     void MarkerActive()
     {
-        hitMarker.SetActive(true);
         fireSource.PlayOneShot(hitMarkerClip);
+        hitMarker.SetActive(true);
+    }
+
+    void markHeadshot()
+    {
+        headshotMarker.SetActive(true);
+        fireSource.PlayOneShot(headMarkerClip);
+    }
+
+    void disableHeadMarker()
+    {
+        headshotMarker.SetActive(false);
     }
 
     void disableMarker()

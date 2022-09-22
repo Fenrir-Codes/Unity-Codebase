@@ -20,6 +20,7 @@ public class InputController : MonoBehaviour
     [Space]
     [Header("Current amount of ammo in the magazine")]
     public int currentAmmo;
+    public int ammoReserves;
     [Space]
     [Header("Default and Aim position transforms")]
     public Transform defaultPosition;

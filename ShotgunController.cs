@@ -13,6 +13,8 @@ public class ShotgunController : MonoBehaviour
 
     [Header("Objects to attach to weapon")]
     [Header("Hitmarker")]
+    [SerializeField] private GameObject headshotMarker;
+    [SerializeField] private AudioClip headMarkerClip;
     [SerializeField] private GameObject hitMarker;
     [SerializeField] private AudioClip hitMarkerClip;
     [Space]
@@ -50,17 +52,27 @@ public class ShotgunController : MonoBehaviour
     [Header("Gauge / Shotgun shell")]
     [SerializeField] private int gaugePerShot = 12;
 
+    private int setDefaultAmmoReserve = 62;
+
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
-    private bool CanReload() => gunData.currentAmmo < gunData.magSize;
+    private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        Initialize();
+    }
+
+    #region initialize
+    private void Initialize()
+    {
+        gunData.ammoReserves = setDefaultAmmoReserve;
         hitMarker.SetActive(false);
         InputController = GetComponentInParent<InputController>();
         InputController.isReloading = false;
     }
+    #endregion
 
     #region Update
     // Update is called once per frame
@@ -68,6 +80,7 @@ public class ShotgunController : MonoBehaviour
     {
         gunData.damage = fixDamage;
         InputController.currentAmmo = gunData.currentAmmo;
+        InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
 
         setInaccuracyWhileAiming();
@@ -123,12 +136,6 @@ public class ShotgunController : MonoBehaviour
 
         }
 
-
-        if (CanReload())
-        {
-            Reload();
-        }
-
     }
     #endregion
 
@@ -149,7 +156,7 @@ public class ShotgunController : MonoBehaviour
     #region reload function
     private void ReloadGun()
     {
-        if (!InputController.isReloading)
+        if (!InputController.isReloading && CanReload())
         {
             StartCoroutine(Reload());
         }
@@ -160,12 +167,20 @@ public class ShotgunController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
-        fireSource.PlayOneShot(reloadClip);
-
         yield return new WaitForSeconds(gunData.reloadTimeShotgun);
 
-        gunData.currentAmmo = gunData.magSize;
+        int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine
+                                                                   // check if we have enough ammo in reserves to refill
+        reloadAmmount = (gunData.ammoReserves - reloadAmmount) >= 0 ? reloadAmmount : gunData.ammoReserves;
+        gunData.currentAmmo += reloadAmmount;
+        gunData.ammoReserves -= reloadAmmount;
 
+        if (gunData.currentAmmo > gunData.magSize)
+        {
+            gunData.currentAmmo = gunData.magSize;
+        }
+
+        //gunData.currentAmmo = gunData.magSize;
         InputController.isReloading = false;
 
     }
@@ -190,6 +205,8 @@ public class ShotgunController : MonoBehaviour
 
             if (hit.transform.CompareTag("Head"))
             {
+                markHeadshot();
+                Invoke("disableHeadMarker", 1.057f);
                 Enemy.takeDamage(Random.Range(fixDamage, 100f));
             }
             else if (hit.transform.CompareTag("Torso"))
@@ -306,8 +323,19 @@ public class ShotgunController : MonoBehaviour
     #region Hit Marker
     void MarkerActive()
     {
-        hitMarker.SetActive(true);
         fireSource.PlayOneShot(hitMarkerClip);
+        hitMarker.SetActive(true);
+    }
+
+    void markHeadshot()
+    {
+        headshotMarker.SetActive(true);
+        fireSource.PlayOneShot(headMarkerClip);
+    }
+
+    void disableHeadMarker()
+    {
+        headshotMarker.SetActive(false);
     }
 
     void disableMarker()

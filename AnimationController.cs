@@ -109,7 +109,7 @@ public class AnimationController : MonoBehaviour
                     ChangeAnimationState(Walk);
                     animator.speed = walkAnimationSpeed;
                 }
-                else if (player.isGrounded && InputController.isShooting)
+                else if (InputController.isShooting)
                 {
                     if (InputController.weapons[activeGun].CompareTag(Pistol))
                     {
