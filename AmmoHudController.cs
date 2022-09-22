@@ -5,7 +5,9 @@ public class AmmoHudController : MonoBehaviour
 {
     InputController inputController;
     public Text CurrentAmmoDisplay;
+    public Text AmmoReserveDisplay;
     private int AmmoToDisplay = 0;
+    private int reservesToDisplay = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +19,7 @@ public class AmmoHudController : MonoBehaviour
     void Update()
     {
         AmmoDisplay();
+        ReserveDisplay();
     }
 
     #region AmmoDisplay
@@ -30,4 +33,13 @@ public class AmmoHudController : MonoBehaviour
     }
     #endregion
 
+    #region Ammo reserves
+    void ReserveDisplay()
+    {
+        reservesToDisplay = inputController.ammoReserves;
+        AmmoReserveDisplay.text = reservesToDisplay.ToString();
+    }
+    #endregion
+
 }
+
