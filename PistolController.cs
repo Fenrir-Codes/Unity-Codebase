@@ -13,6 +13,8 @@ public class PistolController : MonoBehaviour
 
     [Header("Objects to attach to weapon")]
     [Header("Hitmarker")]
+    [SerializeField] private GameObject headshotMarker;
+    [SerializeField] private AudioClip headMarkerClip;
     [SerializeField] private GameObject hitMarker;
     [SerializeField] private AudioClip hitMarkerClip;
     [Space]
@@ -22,6 +24,7 @@ public class PistolController : MonoBehaviour
     [SerializeField] private GameObject woodImpactEffect;
     [SerializeField] private GameObject stoneImpactEffect;
     [SerializeField] private GameObject metalImpactEffect;
+    //[SerializeField] private GameObject decalPrefab;
     [Space]
     [Tooltip("Muzzle particle system (object)")]
     [SerializeField] private ParticleSystem muzzleFlash;
@@ -47,11 +50,14 @@ public class PistolController : MonoBehaviour
     //public float minDamage = 38;
     //public float maxDamage = 66f;
 
+    private int setDefaultAmmoReserve = 90;
+
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
-    private bool CanReload() => gunData.currentAmmo < gunData.magSize;
+    private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
 
     private void Start()
     {
+        gunData.ammoReserves = setDefaultAmmoReserve;
         hitMarker.SetActive(false);
         InputController = GetComponentInParent<InputController>();
         InputController.isReloading = false;
@@ -75,6 +81,7 @@ public class PistolController : MonoBehaviour
     {
        // gunData.damage = Random.Range(minDamage, maxDamage);
         InputController.currentAmmo = gunData.currentAmmo;
+        InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
         // Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
     }
@@ -100,18 +107,13 @@ public class PistolController : MonoBehaviour
 
         }
 
-        if (CanReload())
-        {
-            Reload();
-        }
-
     }
     #endregion
 
     #region calling reload enumerator
     private void ReloadGun()
     {
-        if (!InputController.isReloading)
+        if (!InputController.isReloading && CanReload())
         {
             StartCoroutine(Reload());
         }
@@ -122,12 +124,20 @@ public class PistolController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
-        fireSource.PlayOneShot(reloadClip);
-
         yield return new WaitForSeconds(gunData.reloadTimePistol);
 
-        gunData.currentAmmo = gunData.magSize;
+        int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine
+                                                               // check if we have enough ammo in reserves to refill
+        reloadAmmount = (gunData.ammoReserves - reloadAmmount) >= 0 ? reloadAmmount : gunData.ammoReserves;
+        gunData.currentAmmo += reloadAmmount;
+        gunData.ammoReserves -= reloadAmmount;
 
+        if (gunData.currentAmmo > gunData.magSize)
+        {
+            gunData.currentAmmo = gunData.magSize;
+        }
+        //gunData.currentAmmo = gunData.magSize;
+        //gunData.ammoReserves -= gunData.magSize;
         InputController.isReloading = false;
 
     }
@@ -144,15 +154,17 @@ public class PistolController : MonoBehaviour
         //If the objet we are hitting tagged as Enemy spawn blood splash instead of bullet impact
         else if (hit.transform.CompareTag("Head") || hit.transform.CompareTag("Torso") || hit.transform.CompareTag("Arm") || hit.transform.CompareTag("Leg"))
         {
+
             spawnEnemyBloodSpill(hit);
             EnemyAIController Enemy = hit.transform.GetComponentInParent<EnemyAIController>();
-
             MarkerActive();
             Invoke("disableMarker", 0.1f);
 
             if (hit.transform.CompareTag("Head"))
             {
-                Enemy.takeDamage(Random.Range(95f,100f));
+                markHeadshot();
+                Invoke("disableHeadMarker", 1.057f);
+                Enemy.takeDamage(100f);
             }
             else if (hit.transform.CompareTag("Torso"))
             {
@@ -268,8 +280,19 @@ public class PistolController : MonoBehaviour
     #region Hit Marker
     void MarkerActive()
     {
-        hitMarker.SetActive(true);
         fireSource.PlayOneShot(hitMarkerClip);
+        hitMarker.SetActive(true);
+    }
+
+    void markHeadshot()
+    {
+        headshotMarker.SetActive(true);
+        fireSource.PlayOneShot(headMarkerClip);
+    }
+
+    void disableHeadMarker()
+    {
+        headshotMarker.SetActive(false);
     }
 
     void disableMarker()
