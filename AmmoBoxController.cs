@@ -36,7 +36,7 @@ public class AmmoBoxController : MonoBehaviour
                 InputController input = GameObject.FindGameObjectWithTag("WeaponHolder").GetComponent<InputController>();
 
                 textController.showText = true;
-                if (money.MyMoney >= AmmoPrice)
+                if (money.MyMoney >= AmmoPrice && input.ammoReserves < input.maxReserves)
                 {
                     audioSource.clip = pickupEffect;
                     if (!audioSource.isPlaying)
@@ -55,6 +55,7 @@ public class AmmoBoxController : MonoBehaviour
                 }
                 else if (input.ammoReserves >= input.maxReserves)
                 {
+                    Debug.Log("max reserves: "+input.maxReserves + "ammo reserves: " + input.ammoReserves);
                     textController.showText = true;
                     textController.setText = $"Ammo reserves are full!";
                 }
