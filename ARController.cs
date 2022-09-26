@@ -51,8 +51,6 @@ public class ARController : MonoBehaviour
 
     private Animator animator;
 
-    private int setDefaultAmmoReserve = 150;
-
     private bool CanShoot() => timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
     private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
 
@@ -64,10 +62,12 @@ public class ARController : MonoBehaviour
     #region initialize
     private void Initialize()
     {
-        gunData.ammoReserves = setDefaultAmmoReserve;
         hitMarker.SetActive(false);
         animator = GetComponentInChildren<Animator>();
+
         InputController = GetComponentInParent<InputController>();
+        InputController.maxReserves = gunData.maxAmmoReserves;
+        gunData.ammoReserves = gunData.maxAmmoReserves;
         InputController.isReloading = false;
     }
     #endregion
@@ -93,6 +93,17 @@ public class ARController : MonoBehaviour
         InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
         //Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
+    }
+    #endregion
+
+    #region Ammo refill function
+    public void refillAmmoReserves(int ammoAmount)
+    {
+        gunData.ammoReserves += ammoAmount;
+        if (gunData.ammoReserves > gunData.maxAmmoReserves)
+        {
+            gunData.ammoReserves = gunData.maxAmmoReserves;
+        }
     }
     #endregion
 
@@ -132,6 +143,7 @@ public class ARController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
+        fireSource.PlayOneShot(reloadClip);
         yield return new WaitForSeconds(gunData.reloadTimeAR);
 
         int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine

@@ -21,6 +21,7 @@ public class InputController : MonoBehaviour
     [Header("Current amount of ammo in the magazine")]
     public int currentAmmo;
     public int ammoReserves;
+    public int maxReserves;
     [Space]
     [Header("Default and Aim position transforms")]
     public Transform defaultPosition;
@@ -33,7 +34,6 @@ public class InputController : MonoBehaviour
     private float waitSemiShootInterval = 0.450f;
     Vector3 defaultPos = new Vector3(0f, 0f, 0f);
 
-
     [Header(" ----- Cameras -----")]
     [Tooltip("Both main camera and noclip camera here. Need for use zoom function while aiming")]
     public Camera[] cameras;
@@ -41,17 +41,64 @@ public class InputController : MonoBehaviour
     [SerializeField] private float smooth = 3f;
     private int defaultFOV = 60;
 
+    #region enum for weapon types
+    enum Weapons
+    {
+        Pistol,
+        AR,
+        LMG,
+        Shotgun,
+        Minigun
+    }
+    #endregion
+
+    #region start
     private void Start()
     {
         canShoot = true;
         activeWeapon = 0;
     }
+    #endregion
 
+    #region Update
     private void Update()
     {
         activatedWeapon();
         aimDownTheSight();
     }
+    #endregion
+
+    #region this function calling refill function in weapon controllers
+    public void refillAmmoReserves(int ammoAmount)
+    {
+        if (activeWeapon == (int)Weapons.Pistol)
+        {
+            PistolController pistol = GetComponentInChildren<PistolController>();
+            pistol.refillAmmoReserves(ammoAmount);
+        }
+        if (activeWeapon == (int)Weapons.AR)
+        {
+            ARController ar = GetComponentInChildren<ARController>();
+            ar.refillAmmoReserves(ammoAmount);
+        }
+        if (activeWeapon == (int)Weapons.LMG)
+        {
+            LMGController lmg = GetComponentInChildren<LMGController>();
+            lmg.refillAmmoReserves(ammoAmount);
+        }
+        if (activeWeapon == (int)Weapons.Shotgun)
+        {
+            ShotgunController shotgun = GetComponentInChildren<ShotgunController>();
+            shotgun.refillAmmoReserves(ammoAmount);
+        }
+        if (activeWeapon == (int)Weapons.Minigun)
+        {
+            MinigunController minigun = GetComponentInChildren<MinigunController>();
+            minigun.refillAmmoReserves(ammoAmount);
+        }
+
+    }
+    #endregion
 
     #region Function for check the activated weapon
     void activatedWeapon()

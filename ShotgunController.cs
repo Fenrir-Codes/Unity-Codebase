@@ -46,13 +46,10 @@ public class ShotgunController : MonoBehaviour
     [Header("Set FIXED damage to shotgun")]
     public float fixDamage = 22;
 
-
     [Header("InAccuracy of the shotgun")]
     [SerializeField] private float inAccuracy = 4f;
     [Header("Gauge / Shotgun shell")]
     [SerializeField] private int gaugePerShot = 12;
-
-    private int setDefaultAmmoReserve = 62;
 
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
     private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
@@ -67,9 +64,10 @@ public class ShotgunController : MonoBehaviour
     #region initialize
     private void Initialize()
     {
-        gunData.ammoReserves = setDefaultAmmoReserve;
         hitMarker.SetActive(false);
         InputController = GetComponentInParent<InputController>();
+        gunData.ammoReserves = gunData.maxAmmoReserves;
+        InputController.maxReserves = gunData.maxAmmoReserves;
         InputController.isReloading = false;
     }
     #endregion
@@ -78,13 +76,22 @@ public class ShotgunController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        setInaccuracyWhileAiming();
         gunData.damage = fixDamage;
         InputController.currentAmmo = gunData.currentAmmo;
         InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
+    }
+    #endregion
 
-        setInaccuracyWhileAiming();
-
+    #region Ammo refill function
+    public void refillAmmoReserves(int ammoAmount)
+    {
+        gunData.ammoReserves += ammoAmount;
+        if (gunData.ammoReserves > gunData.maxAmmoReserves)
+        {
+            gunData.ammoReserves = gunData.maxAmmoReserves;
+        }
     }
     #endregion
 
@@ -167,6 +174,7 @@ public class ShotgunController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
+        fireSource.PlayOneShot(reloadClip);
         yield return new WaitForSeconds(gunData.reloadTimeShotgun);
 
         int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine

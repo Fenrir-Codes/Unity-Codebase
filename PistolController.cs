@@ -50,18 +50,24 @@ public class PistolController : MonoBehaviour
     //public float minDamage = 38;
     //public float maxDamage = 66f;
 
-    private int setDefaultAmmoReserve = 90;
-
     private bool CanShoot() => gunData.currentAmmo > 0 && timeBetweenLastShot >= 1f / (gunData.fireRate / 60f);
     private bool CanReload() => gunData.currentAmmo < gunData.magSize && gunData.ammoReserves > 0;
 
     private void Start()
     {
-        gunData.ammoReserves = setDefaultAmmoReserve;
+        Initialize();
+    }
+
+    #region Intialize
+    void Initialize()
+    {
         hitMarker.SetActive(false);
         InputController = GetComponentInParent<InputController>();
+        gunData.ammoReserves = gunData.maxAmmoReserves;
+        InputController.maxReserves = gunData.maxAmmoReserves;
         InputController.isReloading = false;
     }
+    #endregion
 
     #region OnEnable OnDisable fuctions
     private void OnEnable()
@@ -79,11 +85,22 @@ public class PistolController : MonoBehaviour
     #region Update
     private void Update()
     {
-       // gunData.damage = Random.Range(minDamage, maxDamage);
+        // gunData.damage = Random.Range(minDamage, maxDamage);
         InputController.currentAmmo = gunData.currentAmmo;
         InputController.ammoReserves = gunData.ammoReserves;
         timeBetweenLastShot += Time.deltaTime;
         // Debug.DrawRay(Muzzle.position, Muzzle.forward, Color.red, 5, false);
+    }
+    #endregion
+
+    #region Ammo refill function
+    public void refillAmmoReserves(int ammoAmount)
+    {
+        gunData.ammoReserves += ammoAmount;
+        if (gunData.ammoReserves > gunData.maxAmmoReserves)
+        {
+            gunData.ammoReserves = gunData.maxAmmoReserves;
+        }
     }
     #endregion
 
@@ -124,6 +141,7 @@ public class PistolController : MonoBehaviour
     IEnumerator Reload()
     {
         InputController.isReloading = true;
+        fireSource.PlayOneShot(reloadClip);
         yield return new WaitForSeconds(gunData.reloadTimePistol);
 
         int reloadAmmount = gunData.magSize - gunData.currentAmmo; // how many bullets to refill to magazine
