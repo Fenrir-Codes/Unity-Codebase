@@ -18,8 +18,6 @@ public class AmmoBoxController : MonoBehaviour
     [Header("Are you in the buy zone?")]
     public bool canPressTheButton;
 
-    [HideInInspector]public bool showText = false;
-
 
     private void Start()
     {
@@ -37,6 +35,7 @@ public class AmmoBoxController : MonoBehaviour
                 GlobalTextController textController = GameObject.Find("GlobalTextController").GetComponent<GlobalTextController>();
                 InputController input = GameObject.FindGameObjectWithTag("WeaponHolder").GetComponent<InputController>();
 
+                textController.showText = true;
                 if (money.MyMoney >= AmmoPrice)
                 {
                     audioSource.clip = pickupEffect;
@@ -45,20 +44,23 @@ public class AmmoBoxController : MonoBehaviour
                         audioSource.Play();
                         money.TakeMoney(AmmoPrice);
                         input.refillAmmoReserves(AmmoInBox);
+                        textController.showText = true;
                         textController.setText = $"Ammo replenished.";
                     }
                 }
                 else if (money.MyMoney < AmmoPrice)
                 {
+                    textController.showText = true;
                     textController.setText = $"Not enough money!";
                 }
                 else if (input.ammoReserves >= input.maxReserves)
                 {
+                    textController.showText = true;
                     textController.setText = $"Ammo reserves are full!";
                 }
                 else
                 {
-                    showText = false;
+                    textController.showText = false;
                     textController.setText = "";
                 }
 
@@ -71,7 +73,6 @@ public class AmmoBoxController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            showText = true;
             canPressTheButton = true;
         }
     }
@@ -80,7 +81,6 @@ public class AmmoBoxController : MonoBehaviour
     private void OnTriggerExit()
     {
         canPressTheButton = false;
-        showText = false;
     }
 
 }
