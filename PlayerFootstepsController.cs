@@ -7,10 +7,10 @@ public class PlayerFootstepsController : MonoBehaviour
     [Header("Player footstep aufio files")]
     [Tooltip("Audio clips")]
     //public AudioClip[] clip;
-    public AudioClip stepsOnGravel;
-    public AudioClip stepsOnStone;
-    public AudioClip stepsOnSand;
-    public AudioClip stepsOnWood;
+    public AudioClip[] stepsOnGravel;
+    public AudioClip[] stepsOnStone;
+    public AudioClip[] stepsOnWood;
+    public AudioClip[] stepsOnMetal;
 
 
     private string Tag;
@@ -42,56 +42,52 @@ public class PlayerFootstepsController : MonoBehaviour
 
                 if (!Audio.isPlaying && Tag == "Gravel")
                 {
-                    Audio.clip = stepsOnGravel;
                     Audio.pitch = 1f;
-                    Audio.Play();
+                    var walkOnGravelFloor = stepsOnGravel[Random.Range(0, stepsOnGravel.Length)];
+                    Audio.PlayOneShot(walkOnGravelFloor);
 
                     if (Player.isRunning)
                     {
-                        Audio.clip = stepsOnGravel;
                         Audio.pitch = 1.2f;
-                        Audio.Play();
+                        Audio.PlayOneShot(walkOnGravelFloor);
                     }
 
                 }
                 if (!Audio.isPlaying && Tag == "Stone")
                 {
-
-                    Audio.clip = stepsOnStone;
                     Audio.pitch = 0.8f;
-                    Audio.Play();
+                    var walkOnStoneFloor = stepsOnStone[Random.Range(0, stepsOnStone.Length)];
+                    Audio.PlayOneShot(walkOnStoneFloor);
 
                     if (Player.isRunning)
                     {
-                        Audio.clip = stepsOnStone;
                         Audio.pitch = 1.1f;
-                        Audio.Play();
+                        Audio.PlayOneShot(walkOnStoneFloor);
                     }
                 }
-                if (!Audio.isPlaying && Tag == "Sand")
+                if (!Audio.isPlaying && Tag == "Metal")
                 {
-                    Audio.clip = stepsOnSand;
                     Audio.pitch = 0.8f;
-                    Audio.Play();
+                    var walkOnMetalFloor = stepsOnMetal[Random.Range(0, stepsOnMetal.Length)];
+                    Audio.PlayOneShot(walkOnMetalFloor);
 
                     if (Player.isRunning)
                     {
-                        Audio.clip = stepsOnSand;
                         Audio.pitch = 1.1f;
-                        Audio.Play();
+                        Audio.PlayOneShot(walkOnMetalFloor);
+
                     }
                 }
                 if (!Audio.isPlaying && Tag == "Wood")
                 {
-                    Audio.clip = stepsOnWood;
                     Audio.pitch = 0.8f;
-                    Audio.Play();
+                    var walkOnWoodFloor = stepsOnWood[Random.Range(0, stepsOnWood.Length)];
+                    Audio.PlayOneShot(walkOnWoodFloor);
 
                     if (Player.isRunning)
                     {
-                        Audio.clip = stepsOnWood;
                         Audio.pitch = 1.1f;
-                        Audio.Play();
+                        Audio.PlayOneShot(walkOnWoodFloor);
                     }
                 }
 
