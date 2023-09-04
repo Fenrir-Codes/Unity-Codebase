@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce2412915e739304ba171a63d342b0da, type: 3}
+  m_Name: Shotgun
+  m_EditorClassIdentifier: 
+  name: Model 870
+  TypeOfWeapon: 4
+  GunImage: {fileID: 21300000, guid: 5bce133c4a059eb43a2f4b3027251952, type: 2}
+  damage: 55
+  range: 75
+  inAccuracy: 4
+  currentAmmo: 4
+  magazineSize: 8
+  ammoReserves: 104
+  maxAmmoReserves: 120
+  fireRate: 80
+  reloadTime: 1.15
+  hitForce: 200
+  timeBetweenLastShot: 1.754657
+  dryFireClip:
+  - {fileID: 8300000, guid: f1f3c186df686eb4cab16a7aaf6a9911, type: 3}
+  - {fileID: 8300000, guid: 641ea102c69c7e640b502e3e1fe1d171, type: 3}
+  - {fileID: 8300000, guid: 8330d00ff48d8f74c892501e3c00336a, type: 3}
+  - {fileID: 8300000, guid: 1570ee66e8e0984429ba3254ab352755, type: 3}
+  - {fileID: 8300000, guid: 8125059c621412c49820978090e5316a, type: 3}
+  - {fileID: 8300000, guid: dd1f7061c1db8fa4187135687fc65736, type: 3}
+  fireClip:
+  - {fileID: 8300000, guid: bc7100a9ed4e5c5429cd404b31dc69ba, type: 3}
+  - {fileID: 8300000, guid: 23d0613e326470a4084990ae177fe09e, type: 3}
+  - {fileID: 8300000, guid: d880077916139af449ddc8f21a74b255, type: 3}
+  - {fileID: 8300000, guid: 0668c0e0d1f36f24f9afa3dd0e8cc537, type: 3}
+  - {fileID: 8300000, guid: ae3ce47eb54c6b1488d66f5c3d3dedbb, type: 3}
+  - {fileID: 8300000, guid: 8538e1982b80ca547b09599e96e7977c, type: 3}
+  reloadClip: {fileID: 8300000, guid: d96ec5069bbf0a040ab9c0d68b0aed92, type: 3}
+  recoilX: -2
+  recoilY: 2
+  recoilZ: 0.35
+  aimrecoilX: -3
+  aimrecoilY: 0.3
+  aimrecoilZ: 0.3
+  isShooting: 0
+  isReloading: 0
